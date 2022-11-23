@@ -1,0 +1,17 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t multicus/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run multicus/react-test npm test -- --coverage
+  - docker run -e CI=true multicus/react-test npm test
+
+after_success:
+  - docker build -t multicus/multi-client ./client
+  - docker build -t multicus/multi-nginx ./nginx
+  - docker build -t multicus/multi-server ./server
+  - docker build -t multicus/multi-worker ./worker
