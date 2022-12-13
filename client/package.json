@@ -16,6 +16,7 @@
   "scripts": {
     "start": "WATCHPACK_POLLING=true react-scripts start",
     "build": "react-scripts build",
+    "dev": "WATCHPACK_POLLING=true react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

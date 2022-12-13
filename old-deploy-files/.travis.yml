@@ -1,0 +1,36 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t multicus/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true multicus/react-test npm test
+#  - docker run -e CI=true multicus/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t multicus/multi-client ./client
+  - docker build -t multicus/multi-nginx ./nginx
+  - docker build -t multicus/multi-server ./server
+  - docker build -t multicus/multi-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push multicus/multi-client
+  - docker push multicus/multi-nginx
+  - docker push multicus/multi-server
+  - docker push multicus/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: 'eu-north-1'
+  app: 'multi-docker'
+  env: 'Multidocker-env'
+  bucket_name: 'elasticbeanstalk-eu-north-1-836740455247'
+  bucket_path: 'docker-multi'
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
